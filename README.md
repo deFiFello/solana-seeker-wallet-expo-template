@@ -27,7 +27,7 @@ Battle-tested for real-world Seeker integration.
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/YOUR_USERNAME/solana-seeker-wallet-expo-template.git
+git clone https://github.com/actual-username/solana-seeker-wallet-expo-template.git
 cd solana-seeker-wallet-expo-template
 ```
 
@@ -76,11 +76,14 @@ const APP_NAME = 'Your App Name';
 const APP_URI = 'https://your-app.com';
 const APP_ICON = '/icon.png';
 
+// The TOKEN_MEMBER_ACCOUNT is used to verify if the connected wallet holds a specific Token-2022 NFT.
+const RPC_ENDPOINT = 'https://mainnet.helius-rpc.com/?api-key=YOUR_KEY'; // Replace 'YOUR_KEY' with an API key from Helius (https://helius.xyz) or Alchemy (https://www.alchemy.com).
+// Leave it as is or remove the checkTokenHold call if this feature is not required.
 const TOKEN_MEMBER_ACCOUNT = new PublicKey('YOUR_MEMBER_ACCOUNT_ADDRESS'); // optional
 const RPC_ENDPOINT = 'https://mainnet.helius-rpc.com/?api-key=YOUR_KEY'; // Helius, Alchemy, etc.
 ```
 
-- Remove `checkTokenHold` call if you don't need NFT check.
+- Remove `checkTokenHold` call in the `checkWalletConnection` function located in `App.tsx` if you don't need NFT check.
 - Change `cluster: 'mainnet-beta'` to `'devnet'` for testing.
 
 ---
@@ -109,7 +112,7 @@ const RPC_ENDPOINT = 'https://mainnet.helius-rpc.com/?api-key=YOUR_KEY'; // Heli
 ## License
 
 MIT License  
-Copyright (c) 2025 [Your Name / @SolisTerminal]
+Copyright (c) 2025 Chris Hull / @SolisTerminal
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -122,6 +125,5 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ## Questions or Issues?
 
 Built by **@SolisTerminal**  
-Questions or issues? Open an issue or DM on X.
+Questions or issues? Open an issue or DM on X (formerly Twitter).
 
----
