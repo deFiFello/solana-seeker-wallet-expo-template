@@ -1,6 +1,6 @@
-// index.js (root of project)
+// index.js
 
-import 'react-native-get-random-values';  // ← MUST BE FIRST LINE
+import 'react-native-get-random-values';
 
 import { Buffer } from 'buffer';
 global.Buffer = Buffer;

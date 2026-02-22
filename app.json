@@ -37,7 +37,8 @@
     "extra": {
       "eas": {
         "projectId": "your-project-id-from-eas-if-you-use-it"
-      }
+      },
+      "heliusApiKey": "24efde4d-c99d-423f-b38d-4799efaa3a89"
     },
     "jsEngine": "hermes",
     "experiments": {

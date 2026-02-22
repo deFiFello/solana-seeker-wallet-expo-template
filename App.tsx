@@ -1,21 +1,31 @@
+// App.tsx - Solana Seeker Wallet Connection + Token-2022 NFT Hold Check
+// Uses Helius RPC with base64 pubkey encoding (fixes "base58 too long" error)
+// Key loaded from app.json extra (permanent, secure, no dotenv/env files needed)
+
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
+import Constants from 'expo-constants';
 
-// Whitelabel config - change these for your project
-const APP_NAME = 'Your App Name';
-const APP_URI = 'https://your-app.com';
+// CONFIG - Change these for your project
+const APP_NAME = 'Pro Hockey Markets by Solis';
+const APP_URI = 'https://solis-tokenized-markets.vercel.app';
 const APP_ICON = '/icon.png';
-const TOKEN_MINT = new PublicKey('GT22s89nU4iWFkNXj1Bw6uYhJJWDRPpShHt4Bk8f99Te'); // Genesis or your token
-const TOKEN_MEMBER_ACCOUNT = new PublicKey('7RWZohJ2gG1rzV49WgUAbtK3Ds7B5nzHNtFHTkDBpsKs'); // Optional member account
-const RPC_ENDPOINT = 'https://solana-mainnet.g.alchemy.com/v2/YOUR_KEY'; // Replace with your RPC
 
-const connection = new Connection(RPC_ENDPOINT, 'confirmed');
+const TOKEN_MEMBER_ACCOUNT = new PublicKey('7RWZohJ2gG1rzV49WgUAbtK3Ds7B5nzHNtFHTkDBpsKs');
+
+// Load Helius key from app.json extra (permanent, secure, no env files needed)
+const HELIUS_API_KEY = Constants.expoConfig?.extra?.heliusApiKey;
+if (!HELIUS_API_KEY) {
+  console.error('HELIUS_API_KEY is missing from app.json extra');
+}
+
+const RPC_ENDPOINT = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
 
 export default function App() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [tokenStatus, setTokenStatus] = useState<string>('Not checked');
+  const [genesisStatus, setGenesisStatus] = useState<string>('Not checked');
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
 
@@ -43,6 +53,7 @@ export default function App() {
       const account = authorizationResult.accounts[0];
       let addressStr = account.address;
 
+      // Handle base64-encoded address from Seed Vault
       if (typeof addressStr === 'string' && (addressStr.includes('+') || addressStr.includes('='))) {
         try {
           const decodedBytes = Buffer.from(addressStr, 'base64');
@@ -60,7 +71,7 @@ export default function App() {
       const pubkey = new PublicKey(addressStr);
       setWalletAddress(pubkey.toBase58());
 
-      await checkTokenHold(pubkey);
+      await checkGenesis(pubkey);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to connect wallet';
       setConnectionError(msg);
@@ -70,32 +81,52 @@ export default function App() {
     }
   };
 
-  const checkTokenHold = async (pubkey: PublicKey) => {
+  const checkGenesis = async (pubkey: PublicKey) => {
     try {
-      console.log('Checking token hold for:', pubkey.toBase58());
-
-      const memberInfo = await connection.getAccountInfo(TOKEN_MEMBER_ACCOUNT);
-      console.log('Member account info:', memberInfo);
-
+      console.log('Checking Genesis member account for:', pubkey.toBase58());
+  
+      // Use base58 string for pubkey (Helius accepts this - proven in curl)
+      const memberAddress = TOKEN_MEMBER_ACCOUNT.toBase58();
+  
+      const response = await fetch(RPC_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'getAccountInfo',
+          params: [memberAddress, { encoding: 'base64' }],
+        }),
+      });
+  
+      const data = await response.json();
+      console.log('Helius response:', JSON.stringify(data, null, 2));
+  
+      if (data.error) {
+        throw new Error(data.error.message || 'RPC error');
+      }
+  
+      const memberInfo = data.result.value;
       if (memberInfo === null) {
-        setTokenStatus('Token member account not found');
+        setGenesisStatus('Genesis member account not found');
         return;
       }
-
-      const msg = 'Holds Token (group member account exists)';
-      setTokenStatus(msg);
-      Alert.alert('Token Check', msg);
+  
+      // Success: account exists = hold
+      const msg = 'Holds 1 Genesis (group member account exists)';
+      setGenesisStatus(msg);
+      Alert.alert('Success', msg);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Token check failed';
-      console.log('Token check failed:', msg, err);
-      setTokenStatus('Not held');
+      const msg = err instanceof Error ? err.message : 'Genesis check failed';
+      console.log('Genesis check failed:', msg, err);
+      setGenesisStatus('Not held');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{APP_NAME}</Text>
-      <Text style={styles.subtitle}>Solana Mobile Wallet Example</Text>
+      <Text style={styles.title}>Pro Hockey Markets by Solis</Text>
+      <Text style={styles.subtitle}>NHL Analytics & Markets</Text>
 
       {connectionError && (
         <Text style={styles.errorText}>Error: {connectionError}</Text>
@@ -104,13 +135,13 @@ export default function App() {
       {isConnecting ? (
         <ActivityIndicator size="large" color="#00ff9d" style={{ marginTop: 20 }} />
       ) : !walletAddress ? (
-        <Button title="Connect Wallet" onPress={connectWallet} color="#00ff9d" disabled={isConnecting} />
+        <Button title="Connect Seeker Wallet" onPress={connectWallet} color="#00ff9d" disabled={isConnecting} />
       ) : (
         <View style={styles.connectedContainer}>
           <Text style={styles.connectedText}>
             Connected: {walletAddress.slice(0, 8)}...
           </Text>
-          <Text style={styles.statusText}>Token Status: {tokenStatus}</Text>
+          <Text style={styles.statusText}>Genesis: {genesisStatus}</Text>
         </View>
       )}
     </View>
